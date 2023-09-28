@@ -109,10 +109,10 @@ const _paginationConfig = computed(() => {
     layout: 'total, sizes, prev, pager, next, jumper',
   }
   return {
-    pageNum: props.paginationConfig.pageNum,
+    pageNum: props.paginationConfig?.pageNum,
     ...config,
     ...props.paginationConfig,
-    currentPage: props.paginationConfig.pageNum,
+    currentPage: props.paginationConfig?.pageNum,
   }
 })
 // 切换分页
