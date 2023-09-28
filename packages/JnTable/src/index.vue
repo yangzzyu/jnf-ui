@@ -144,7 +144,7 @@ function typeIndex(index: number) {
 }
 
 // 将table组件的全部方法暴露出去
-defineExpose({})
+defineExpose({ element: jnTableRef })
 </script>
 <style scoped>
 .pagination {

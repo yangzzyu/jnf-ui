@@ -2,7 +2,7 @@
  * @Author: yangyu 1431330771@qq.com
  * @Date: 2023-09-04 23:53:52
  * @LastEditors: yangyu 1431330771@qq.com
- * @LastEditTime: 2023-09-28 09:32:44
+ * @LastEditTime: 2023-09-28 10:22:12
  * @FilePath: \jnf-ui-master\packages\components.d.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -16,6 +16,7 @@ import JnForm from './jnform/src/index.vue'
 import JnTableSearch from './JnTableSearch/src/index.vue'
 import JnTable from './JnTable/src/index.vue'
 import JnFormTable from './JnFormInTable/src/index.vue'
+import JnFileUpload from './JnFileUpload/src/index.vue'
 
 declare module 'vue' {
   export interface GlobalComponents {
@@ -28,5 +29,6 @@ declare module 'vue' {
     JnTableSearch: typeof JnTableSearch
     JnTable: typeof JnTable
     JnFormTable: typeof JnFormTable
+    JnFileUpload: typeof JnFileUpload
   }
 }

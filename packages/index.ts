@@ -2,7 +2,7 @@
  * @Author: yangyu 1431330771@qq.com
  * @Date: 2023-09-04 23:53:52
  * @LastEditors: yangyu 1431330771@qq.com
- * @LastEditTime: 2023-09-28 09:34:01
+ * @LastEditTime: 2023-09-28 10:22:41
  * @FilePath: \jnf-ui-master\packages\index.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -19,6 +19,7 @@ import JnForm from './JnForm'
 import JnTableSearch from './JnTableSearch'
 import JnTable from './JnTable'
 import JnFormTable from './JnFormInTable'
+import JnFileUpload from './JnFileUpload'
 
 // 存储组件列表
 const components: {
@@ -33,6 +34,7 @@ const components: {
   JnTableSearch,
   JnTable,
   JnFormTable,
+  JnFileUpload
 }
 // 插件声明：声明所有插件
 // 插件注册：在 Vue 项目的入口文件中，通过 ( app.use(插件) ) 进行注册
@@ -67,6 +69,7 @@ export {
   JnTableSearch,
   JnTable,
   JnFormTable,
+  JnFileUpload
 }
 export default {
   // 导出的对象必须具有 install，才能被 Vue.use() 方法安装
