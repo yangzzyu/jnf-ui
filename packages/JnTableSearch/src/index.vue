@@ -8,14 +8,14 @@
       >
       <!-- :inline="true" -->
       <template #searchAction="scope">
-        <el-button
+        <jn-button
           type="primary"
           icon="Search"
           @click="$emit('search', { ...scope.model, current: 1 })"
-          >查询</el-button
+          >查询</jn-button
         >
-        <el-button icon="Refresh" @click="resetSearchForm">重置</el-button>
-        <el-button
+        <jn-button icon="Refresh" @click="resetSearchForm">重置</jn-button>
+        <jn-button
           type="primary"
           v-if="!scope.isShowExpand"
           link
@@ -25,7 +25,7 @@
             <ArrowDown v-if="!subListOpenFlag" />
             <ArrowUp v-else />
           </el-icon>
-          {{ !subListOpenFlag ? '展开' : '收起' }}</el-button
+          {{ !subListOpenFlag ? '展开' : '收起' }}</jn-button
         >
       </template>
     </jn-form>

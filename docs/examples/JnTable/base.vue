@@ -2,7 +2,7 @@
  * @Author: yangyu 1431330771@qq.com
  * @Date: 2023-09-19 11:45:27
  * @LastEditors: yangyu 1431330771@qq.com
- * @LastEditTime: 2023-09-27 14:10:05
+ * @LastEditTime: 2023-10-07 16:03:39
  * @FilePath: \jnf-ui-master\docs\examples\JnForm\base.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -24,6 +24,7 @@
         @row-click="rowClick"
         ref="jnTableRef"
         @selection-change="selectionChange"
+        :showPagination="false"
       >
         <template #expand="{ scope }">
           <el-row style="padding: 20px">
@@ -201,10 +202,11 @@ function fetchData() {
 function initData() {
   loading.value = true
   setTimeout(() => {
-    tableData.value = fetchData().slice(
-      (pageConfig.value.pageNum - 1) * pageConfig.value.pageSize,
-      pageConfig.value.pageNum * pageConfig.value.pageSize
-    )
+    tableData.value = fetchData()
+    // .slice(
+    //   (pageConfig.value.pageNum - 1) * pageConfig.value.pageSize,
+    //   pageConfig.value.pageNum * pageConfig.value.pageSize
+    // )
     loading.value = false
   }, 1000)
 }
