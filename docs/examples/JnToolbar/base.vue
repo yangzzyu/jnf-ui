@@ -2,31 +2,61 @@
  * @Author: yangyu 1431330771@qq.com
  * @Date: 2023-09-19 11:45:27
  * @LastEditors: yangyu 1431330771@qq.com
- * @LastEditTime: 2024-05-23 10:45:33
+ * @LastEditTime: 2023-10-10 13:39:26
  * @FilePath: \jnf-ui-master\docs\examples\JnForm\base.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
   <t-layout-page>
     <t-layout-page-item>
-      <div style="height: 20px;"></div>
-      <!-- <jn-table></jn-table> -->
+      <div>
+        <el-row>
+          <el-popovers placement="top" trigger="click">
+            <div>
+              <!-- el-checkbox-group 组件 -->
+              <el-checkbox-group v-model="selectedColumns">
+                <!-- 使用 v-for 渲染复选框 -->
+                <draggable>
+                  <transition-group>
+                    <el-checkbox
+                      class="check"
+                      v-for="(item, index) in columns"
+                      :label="item.prop"
+                      :key="item.prop"
+                    >
+                      {{ item.label || '未命名列' }}
+                    </el-checkbox>
+                  </transition-group>
+                </draggable>
+              </el-checkbox-group>
+            </div>
+            <!-- 放置上述代码 -->
+            <template #reference>
+              <el-button class="m-2">Hover to activate</el-button>
+            </template>
+          </el-popovers>
+        </el-row>
+      </div>
+      <jn-toolbar
+        v-model:tableColumns="columns"
+        cacheKey="placeOrder"
+      ></jn-toolbar>
       <jn-table
+        cacheKey="placeOrder"
         :tableData="tableData"
         :loading="loading"
-        :columns="columns1"
+        :columns="columns"
         v-model:paginationConfig="pageConfig"
         @changePage="initData"
         rowKey="id"
         stripe
         border
+        max-height="500"
         @row-click="rowClick"
         ref="jnTableRef"
         @selection-change="selectionChange"
-        cacheKey='tabssss'
-        >
-        <!-- :showPagination="false" -->
-        <!-- max-height="500" -->
+        :showPagination="false"
+      >
         <template #expand="{ scope }">
           <el-row style="padding: 20px">
             <el-col>姓名：{{ scope.row.name }}</el-col>
@@ -34,10 +64,18 @@
           </el-row>
         </template>
         <template #handler="{ scope }">
-          <el-button link type="primary" size="small" @click="handlerEdit(scope)"
+          <el-button
+            link
+            type="primary"
+            size="small"
+            @click="handlerEdit(scope)"
             >编辑</el-button
           >
-          <el-button link type="danger" size="small" @click="handlerDelect(scope)"
+          <el-button
+            link
+            type="danger"
+            size="small"
+            @click="handlerDelect(scope)"
             >删除</el-button
           >
         </template>
@@ -46,9 +84,11 @@
   </t-layout-page>
 </template>
 <script setup lang="ts">
+import draggable from 'vuedraggable'
 import { reactive, ref, onMounted } from 'vue'
-import { columns1 } from './config'
-console.log(columns1,'columns1')
+// import { columns } from './config'
+console.log(draggable,'draggable')
+const selectedColumns=ref([])
 const columns = ref([
   { type: 'expand', label: '', slotName: 'expand' },
   { type: 'selection', label: '', reserveSelection: true },
@@ -57,7 +97,7 @@ const columns = ref([
   {
     label: '排名',
     prop: 'ranking',
-    // type: 'index',
+    type: 'index',
     width: 80,
     index: (index: number) => {
       return index * 3
@@ -83,13 +123,14 @@ const columns = ref([
     // slotName: "name",
     render: (val) => {
       return val
+
       //   <el-tag type="success">{ val }</el-tag>;
     },
   },
   {
     fit: false,
-    prop: 'name1',
-    label: '地址0',
+    prop: 'name',
+    label: '地址',
     // children: [
     //     {
     //         label: '省份',
@@ -116,30 +157,30 @@ const columns = ref([
     // ]
   },
   {
-    prop: 'address1',
-    label: '地址1',
+    prop: 'address',
+    label: '地址',
     fit: true,
   },
   {
-    prop: 'address2',
-    label: '地址2',
+    prop: 'address',
+    label: '地址',
   },
   {
-    prop: 'address3',
-    label: '地址3',
+    prop: 'address',
+    label: '地址',
   },
 
   {
-    prop: 'address4',
-    label: '地址4',
+    prop: 'address',
+    label: '地址',
   },
   {
-    prop: 'address5',
-    label: '地址5',
+    prop: 'address',
+    label: '地址',
   },
   {
-    prop: 'address6',
-    label: '地址6',
+    prop: 'address',
+    label: '地址',
   },
   {
     prop: 'amount',
@@ -204,10 +245,10 @@ function initData() {
   loading.value = true
   setTimeout(() => {
     tableData.value = fetchData()
-    .slice(
-      (pageConfig.value.pageNum - 1) * pageConfig.value.pageSize,
-      pageConfig.value.pageNum * pageConfig.value.pageSize
-    )
+    // .slice(
+    //   (pageConfig.value.pageNum - 1) * pageConfig.value.pageSize,
+    //   pageConfig.value.pageNum * pageConfig.value.pageSize
+    // )
     loading.value = false
   }, 1000)
 }

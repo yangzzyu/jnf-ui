@@ -2,14 +2,14 @@
  * @Author: yangyu 1431330771@qq.com
  * @Date: 2023-09-19 11:45:27
  * @LastEditors: yangyu 1431330771@qq.com
- * @LastEditTime: 2023-09-27 17:20:10
+ * @LastEditTime: 2024-05-21 09:47:02
  * @FilePath: \jnf-ui-master\docs\examples\JnFormInTable\base.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
   <t-layout-page>
     <t-layout-page-item>
-      {{ formData }}
+      <!-- {{ formData }} -->
       <jn-form
         ref="detailForm"
         class="baseForm"
@@ -23,10 +23,16 @@
             :tableData="formData.list"
             ruleKey="list"
             :columns="tableOptions"
-            v-model:paginationConfig="pageConfig"
             border
             :disabled="false"
+            :showPagination="false"
           >
+            <!-- area1 -->
+            <template #area1="{ itemData }">
+              <!-- <div>{{ itemData }}</div> -->
+              {{ itemData }}wqqe3111111111111111111312313
+            </template>
+            <!-- v-model:paginationConfig="pageConfig" -->
             <!-- <template #actionArea="{ itemData }">
               <el-button link type="danger" size="small"
                 >删除132123123</el-button
@@ -45,7 +51,7 @@ import { table } from 'console'
 import { ref, onMounted } from 'vue'
 // import { formOptions } from './config'
 let detailForm = ref()
-const formData = ref({ area11: '212121', list: [{ area11: '212121' }] })
+const formData = ref({ area11: '212121', list: [{ area11: 'dd' }] })
 // /<BaseForm.FormOptions[]>
 const changeSaleOrg = (e, row) => {
   console.log(e, row, 'eqeqwwq')
@@ -330,6 +336,7 @@ const tableOptions = ref([
         change: ($event, row, formData) => {
           console.log($event, row, formData, 'ppppp')
           row.area1 = '1212121'
+          row.list = [{ label: '1', value: '1' }]
         },
       },
     },
@@ -342,9 +349,9 @@ const tableOptions = ref([
     },
     configEdit: {
       type: 'input',
-      attrs: {
-      },
+      attrs: {},
     },
+    slotName: 'area1',
   },
   {
     prop: 'area2',
@@ -354,6 +361,9 @@ const tableOptions = ref([
     },
     configEdit: {
       type: 'select',
+      children: ({ row, formData }) => {
+        return row.list
+      },
     },
   },
   {
@@ -364,20 +374,20 @@ const tableOptions = ref([
     },
     configEdit: {
       type: 'radio-group',
-      children: [
-        {
-          label: '前纺一车间',
-          value: 'W1',
-        },
-        {
-          label: '前纺二车间',
-          value: 'W2',
-        },
-        {
-          label: '前纺三车间',
-          value: 'W3',
-        },
-      ],
+      // children: [
+      //   {
+      //     label: '前纺一车间',
+      //     value: 'W1',
+      //   },
+      //   {
+      //     label: '前纺二车间',
+      //     value: 'W2',
+      //   },
+      //   {
+      //     label: '前纺三车间',
+      //     value: 'W3',
+      //   },
+      // ],
     },
   },
   {
@@ -417,6 +427,7 @@ const tableOptions = ref([
     label: '装炉位wqwq置',
     columnConfig: {
       minWidth: '120',
+      align:'right'
     },
   },
   {
@@ -427,6 +438,9 @@ const tableOptions = ref([
     },
     configEdit: {
       type: 'date-picker',
+      attrs: {
+        type: "daterange",
+      },
     },
   },
   {
@@ -440,10 +454,10 @@ const tableOptions = ref([
 ])
 
 onMounted(() => {
-  detailForm?.value.initForm({
-    schema: formOptions.value,
-    formData: formData.value,
-  })
+  // detailForm?.value.initForm({
+  //   schema: formOptions.value,
+  //   formData: formData.value,
+  // })
 })
 function handleClose() {
   detailForm.value.resetFields()

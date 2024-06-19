@@ -2,7 +2,7 @@
  * @Author: yangyu 1431330771@qq.com
  * @Date: 2023-09-28 10:17:44
  * @LastEditors: yangyu 1431330771@qq.com
- * @LastEditTime: 2023-09-28 11:07:14
+ * @LastEditTime: 2024-02-01 10:11:43
  * @FilePath: \jnf-ui-master\packages\JnFileUpload\src\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -29,7 +29,7 @@
         type="primary"
         icon="upload"
         size="small"
-        >上传附件</el-button
+        >{{ props.btnName }}</el-button
       >
     </el-upload>
     <!-- 上传提示 -->
@@ -44,7 +44,39 @@
       的文件
     </div>
 
-    <el-table :data="fileList" style="width: 100%">
+    <jn-table
+      :tableData="fileList"
+      :columns="props.fileColumns"
+      scrollbar-always-on
+      stripe
+      border
+      ref="JnFileUploadTableRef"
+      :show-pagination="false"
+    >
+      <template #handler="{ scope }">
+        <!-- <template #default="scope"> -->
+        <el-space alignment="start" :size="20">
+          <jn-button
+            link
+            @click="downloadFile(scope.row.fileUrl, scope.row.filename)"
+            type="primary"
+            >下载</jn-button
+          >
+          <jn-button link @click="handlePreview(scope.row)" type="primary"
+            >预览</jn-button
+          >
+          <jn-button
+            v-if="!props.disabled"
+            link
+            @click="handleDelete(scope.$index, scope)"
+            type="danger"
+            >删除</jn-button
+          >
+        </el-space>
+        <!-- </template> -->
+      </template>
+    </jn-table>
+    <!-- <el-table :data="fileList" style="width: 100%">
       <el-table-column prop="filename" label="文档名称" min-width="180" />
       <el-table-column prop="fileSize" label="大小" />
       <el-table-column prop="uploadBy" label="上传人" />
@@ -63,10 +95,7 @@
               type="primary"
               >下载</jn-button
             >
-            <jn-button
-              link
-              @click="handlePreview(scope.row)"
-              type="primary"
+            <jn-button link @click="handlePreview(scope.row)" type="primary"
               >预览</jn-button
             >
             <jn-button
@@ -79,19 +108,20 @@
           </el-space>
         </template>
       </el-table-column>
-    </el-table>
+    </el-table> -->
   </div>
+  <Preview ref="PreviewRef" />
 </template>
 
 <script lang="ts" setup>
 import { defineProps, computed, defineEmits, reactive, watch, ref } from 'vue'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
-
+import Preview from './Preview.vue'
 // import { getToken } from "@/utils/auth";
 // import { preview } from "@/api/file.ts";
 
 const props = defineProps({
-  modelValue:   {
+  modelValue: {
     type: Array,
     default: () => [],
   },
@@ -119,13 +149,49 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  btnName: {
+    type: String,
+    default: '上传附件',
+  },
+  fileColumns: {
+    type: Array,
+    default: () => [
+      {
+        prop: 'filename',
+        label: '文档名称',
+        // fit: true,
+        minWidth: 120,
+      },
+      {
+        prop: 'fileSize',
+        label: '大小',
+      },
+      {
+        prop: 'uploadBy',
+        label: '上传人',
+      },
+      {
+        prop: 'uploadTime',
+        label: '上传日期',
+      },
+      {
+        prop: 'handler',
+        slotName: 'handler',
+        label: '操作',
+        align: 'center',
+        showOverflowTooltip: true,
+        fixed: 'right',
+        minWidth: 120,
+      },
+    ],
+  },
 })
 const fileUpload = ref()
+const PreviewRef = ref()
 // const { proxy } = getCurrentInstance()
 const emit = defineEmits(['update:modelValue', 'callBack'])
 const number = ref(0)
 const uploadList = ref(<any>[])
-const baseUrl = import.meta.env.VITE_APP_BASE_API
 const uploadFileUrl = ref(
   import.meta.env.VITE_APP_BASE_API + '/jnf-file/actions/single-upload/'
 ) // 上传文件服务器地址
@@ -144,7 +210,7 @@ watch(
       // const list = val
       // Array.isArray(val) ? val : props.modelValue.split(',')
       // 然后将数组转为对象数组
-      fileList.value = val.map((item:any) => {
+      fileList.value = val.map((item: any) => {
         // if (typeof item === "string") {
         //   item = { name: item, url: item };
         // }
@@ -241,7 +307,12 @@ function downloadFile(url, fileName) {
 /** 预览 */
 function handlePreview(row) {
   console.log(row, 'row')
-  window.open(row.fileUrl, '_blank')
+  const fileType = row.fileUrl?.split('.')?.at(-1)
+  if (['pdf', 'xls', 'xlsx', 'doc', 'docx'].includes(fileType)) {
+    PreviewRef.value.open(row.fileUrl, '预览')
+  } else {
+    window.open(row.fileUrl, '_blank')
+  }
   // preview({ uri: row.uri }).then((res) => {});
 }
 // 删除文件
@@ -250,6 +321,7 @@ function handleDelete(index, scope) {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
+    appendTo: 'body',
   })
     .then(async () => {
       emit('callBack', scope.row)
@@ -267,9 +339,8 @@ function uploadedSuccessfully() {
     return { ...i, fileUrl: i.uri }
   })
   if (number.value > 0 && uploadList.value.length === number.value) {
-    fileList.value = fileList.value
-      // .filter((f) => f.url !== undefined)
-      .concat(list)
+    fileList.value = fileList.value.concat(list)
+    // .filter((f) => f.url !== undefined)
     uploadList.value = []
     number.value = 0
     // emit("update:modelValue", listToString(fileList.value));
@@ -328,4 +399,11 @@ function listToString(list, separator) {
 .ele-upload-list__item-content-action .el-link {
   margin-right: 10px;
 }
+
 </style>
+
+<style>
+.is-message-box {
+  /* position: relative; */
+  z-index: 10000 !important;
+}</style>

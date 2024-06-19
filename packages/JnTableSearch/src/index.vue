@@ -5,13 +5,15 @@
       isSearch
       :rowsTotal="props.rowsTotal"
       :formOpts="props.searchParamet"
-      >
+      v-model="searchValue"
+    >
+      <!-- v-model="formData" -->
       <!-- :inline="true" -->
       <template #searchAction="scope">
         <jn-button
           type="primary"
           icon="Search"
-          @click="$emit('search', { ...scope.model, current: 1 })"
+          @click="handleSearch(scope.model)"
           >查询</jn-button
         >
         <jn-button icon="Refresh" @click="resetSearchForm">重置</jn-button>
@@ -36,11 +38,19 @@
 import { ref, onMounted, computed } from 'vue'
 
 let props = defineProps({
+  // modelValue: {
+  //   type: Object,
+  //   default: () => {},
+  // },
   rowsTotal: {
     type: Number,
     default: 999999,
   },
   searchParamet: {
+    type: Object,
+    default: () => {},
+  },
+  formData: {
     type: Object,
     default: () => {},
   },
@@ -51,7 +61,9 @@ const $emit = defineEmits([
    * @arg {object} params - {current?: number}
    */
   'search',
+  'update:formData',
 ])
+const searchValue = ref(props.formData || {})
 // interface SubListItem {
 //   id: number;
 //   name: string;
@@ -70,15 +82,15 @@ const changeExpand = () => {
 /** 重置 */
 const resetSearchForm = () => {
   searchFormRef.value.resetFields()
+  // $emit('update:formData', {})
   $emit('search', {
     current: 1,
   })
 }
 onMounted(() => {
-  searchFormRef?.value.initForm({
-    schema: props.searchParamet,
-    formData: {},
-  })
+  // searchFormRef?.value.initForm({
+  //   formData: props.formData,
+  // })
 })
 
 // 单纯重置表单
@@ -86,6 +98,21 @@ const resetSearchFormParams = () => {
   searchFormRef.value.resetFields()
 }
 
+const handleSearch = (params) => {
+  // console.log('params :>> ', params)
+  // 在这里对搜索参数进行处理，去除左右空格
+  const trimmedParams = { ...params }
+  for (const key in trimmedParams) {
+    if (typeof trimmedParams[key] === 'string') {
+      trimmedParams[key] = trimmedParams[key].trim()
+    }
+    if (Array.isArray(trimmedParams[key]) && !trimmedParams[key].length) {
+      delete trimmedParams[key]
+    }
+  }
+
+  $emit('search', { ...trimmedParams, current: 1 })
+}
 // 暴露重置方法
 defineExpose({
   resetSearchForm,

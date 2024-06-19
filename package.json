@@ -1,6 +1,6 @@
 {
   "name": "jnf-ui",
-  "version": "1.1.4",
+  "version": "1.2.25",
   "description": "Vue3 中基于Element-plus二次封装基础组件文档",
   "author": "yangyu",
   "license": "ISC",
@@ -77,13 +77,15 @@
     "vue",
     "vue3",
     "t-ui",
-    
     "vitepress-theme-demoblock",
     "二次封装组件",
     "封装组件",
     "components"
   ],
   "dependencies": {
+    "@vue-office/docx": "^1.6.0",
+    "@vue-office/excel": "^1.6.0",
+    "@vue-office/pdf": "^1.6.0",
     "lodash": "^4.17.21"
   }
 }

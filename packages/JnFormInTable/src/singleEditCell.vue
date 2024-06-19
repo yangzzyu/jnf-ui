@@ -51,14 +51,14 @@
       v-on="cEvent(configEdit)"
     >
       <component
-        v-if="compChildValue(configEdit)"
-        :is="`el-${compChildValue(configEdit)}`"
-        v-for="(child, i) in configEdit?.children"
-        :key="i"
-        :label="child.label ?? child[configEdit.attrs?.props.label]"
-        :value="child.value ?? child[configEdit.attrs?.props.value]"
+        v-if="compChildName(configEdit)"
+        :is="`el-${compChildName(configEdit)}`"
+        v-for="(child, i) in cChildren(configEdit)"
+        :key="child[configEdit.attrs?.valueKey || 'value']"
+        :label="compChildLabel(configEdit, child)"
+        :value="compChildValue(configEdit, child, i)"
         :disabled="child?.disabled ?? props?.disabled"
-      >
+        >{{ child[configEdit.attrs?.props?.label || 'label'] }}
       </component>
     </component>
   </div>
@@ -115,9 +115,9 @@ const cEvent = computed(() => {
     Object.keys(event).forEach((v) => {
       changeEvent[v] = (e) => {
         if (e) {
-          event[v] && event[v](e, props.scope.row,props.formData)
+          event[v] && event[v](e, props.scope.row, props.formData)
         } else {
-          event[v] && event[v](props.scope.row,props.formData)
+          event[v] && event[v](props.scope.row, props.formData)
         }
       }
     })
@@ -137,17 +137,26 @@ const cAttrs = computed(() => {
                   ?.disabled,
           }
         : {
-            clearable: true,
+            clearable: false,
             filterable: true,
             disabled: item.attrs?.disabled ?? props?.disabled,
-            // ...$attrs,
             ...item.attrs,
           }
     return itemAttrs
   }
 })
-// 子子组件value
-const compChildValue = computed(() => {
+// 下拉选择项配置
+const cChildren = computed(() => {
+  return (item: any) => {
+    const itemChildren =
+      typeof item.children == 'function'
+        ? item.children({ row: props.scope.row, formData: props.formData })
+        : item.children
+    return itemChildren
+  }
+})
+// 子组件名称
+const compChildName = computed(() => {
   return (opt: any) => {
     switch (opt.type) {
       case 'select':
@@ -161,18 +170,28 @@ const compChildValue = computed(() => {
     }
   }
 })
+// 子子组件value
+const compChildValue = computed(() => {
+  return (opt: any, child, key) => {
+    switch (opt.type) {
+      case 'select':
+        if (opt.attrs?.valueKey) return child
+      default:
+        return child[opt.attrs?.props?.value || 'value']
+    }
+  }
+})
 // 子子组件label
 const compChildLabel = computed(() => {
-  return (configEdit: any, value) => {
-    switch (configEdit.type) {
-      case 'radio':
-      case 'checkbox':
-        return value.value
-      case 'el-select-multiple':
-      case 'select-arr':
-        return value[configEdit.arrLabel || 'dictLabel']
-      case 'select-obj':
-        return value
+  return (opt: any, child) => {
+    switch (opt.type) {
+      case 'radio-group':
+        return child[opt.attrs?.props?.value || 'value']
+      // case 'select':
+      // case 'checkbox-group':
+      //   return child[opt.attrs?.props.label || 'label']
+      default:
+        return child[opt.attrs?.props?.label || 'label']
     }
   }
 })

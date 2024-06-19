@@ -2,145 +2,63 @@
  * @Author: yangyu 1431330771@qq.com
  * @Date: 2023-06-16 15:13:51
  * @LastEditors: yangyu 1431330771@qq.com
- * @LastEditTime: 2023-09-27 15:55:54
- * @FilePath: /zr_szhpt_web/src/components/BaseForms/src/index.vue
+ * @LastEditTime: 2024-06-18 16:01:54
+ * @FilePath: \jnf-ui\packages\JnForm\src\index.vue
  * @Description: 封装表单jnf-form
 -->
 <template>
-  <el-form
-    class="jnf-form"
-    ref="form"
-    v-if="model"
-    :model="model"
-    :rules="rules"
-    v-bind="$attrs"
-    :validate-on-rule-change="false"
-  >
+  <el-form class="jnf-form" ref="form" v-if="modelValue" :model="modelValue" :rules="rules" v-bind="$attrs"
+    :validate-on-rule-change="false">
     <el-row class="demo-autocomplete">
       <template v-for="(item, key) in formOpts" :key="key">
-        <div v-if="item.type == 'title'" class="secondary-tit">
+        <div v-if="item.type == 'title' && item.show" class="secondary-tit" :class="item.attrs?.className">
           <span v-html="item.label"></span>
-          <el-button
-            type="primary"
-            v-if="item.attrs?.isShowExpand"
-            @click="handleShow(key)"
-            link
-          >
+          <el-button type="primary" v-if="item.attrs?.isShowExpand" @click="handleShow(key)" link>
             <el-icon>
               <ArrowDown v-if="!item.show" />
               <ArrowUp v-else />
             </el-icon>
-            {{ !item.show ? '展开' : '收起' }}</el-button
-          >
+            {{ !item.show ? '展开' : '收起' }}</el-button>
           <slot :name="key"></slot>
         </div>
-        <slot v-else :name="key" :form-data="model" :schema="{ ...item }">
+        <slot v-else :name="key" :form-data="modelValue" :schema="{ ...item }">
           <el-col :span="item?.colSize" v-show="item.show">
-            <!-- <el-form-item
-              v-if="props.isDetail"
-              :prop="key"
-              :label="item.label"
-              :required="false"
-              :label-width="item.labelWidth"
-            >
-              <component
-                v-if="item.render"
-                :is="item.render"
-                :val="model[key]"
-                :model="model"
-                :index="key"
-              />
-              <div v-else>{{ model[key] }}</div>
-            </el-form-item> -->
-            <!-- v-else -->
-            <el-form-item
-              :prop="key"
-              :label="item.label"
-              :label-width="item.labelWidth"
-            >
-              <template v-if="item.type == 'text'">
-                <component
-                  v-if="item.render"
-                  :is="item.render"
-                  :val="model[key]"
-                  :model="model"
-                  :index="key"
-                />
-                <span v-else>{{ model[key] }}</span>
-              </template>
+            <el-form-item :prop="key" :label="item.label" :label-width="item.labelWidth">
               <template v-if="!item?.hasOwnProperty('children')">
-                <component
-                  v-if="item.type !== 'upload' && item.type !== 'editor'"
-                  v-bind="cAttrs(item)"
-                  :is="`el-${item.type}`"
-                  v-model="model[key!]"
-                  :placeholder="item.placeholder"
-                  v-on="cEvent(item)"
-                >
+                <component v-if="item.type !== 'upload' && item.type !== 'editor'" v-bind="cAttrs(item)"
+                  :is="`el-${item.type}`" v-model="modelValue[key!]" :placeholder="item.placeholder"
+                  v-on="cEvent(item)">
                 </component>
-                <el-upload
-                  v-if="item.type === 'upload'"
-                  v-bind="item.uploadAttrs"
-                  :on-preview="onPreview"
-                  :on-remove="onRemove"
-                  :on-success="onSuccess"
-                  :on-error="onError"
-                  :on-progress="onProgress"
-                  :on-change="onChange"
-                  :before-upload="beforeUpload"
-                  :before-remove="beforeRemove"
-                  :http-request="httpRequest"
-                  :on-exceed="onExceed"
-                  class="m-el-upload"
-                >
+                <el-upload v-if="item.type === 'upload'" v-bind="item.uploadAttrs" :on-preview="onPreview"
+                  :on-remove="onRemove" :on-success="onSuccess" :on-error="onError" :on-progress="onProgress"
+                  :on-change="onChange" :before-upload="beforeUpload" :before-remove="beforeRemove"
+                  :http-request="httpRequest" :on-exceed="onExceed" class="m-el-upload">
                   <slot name="uploadArea"></slot>
                   <slot name="uploadTip"></slot>
                 </el-upload>
               </template>
-              <component
-                v-else
-                :is="`el-${item.type}`"
-                v-model="model[key!]"
-                :placeholder="item.placeholder"
-                :disabled="item.attrs?.disabled ?? props?.disabled"
-                v-bind="cAttrs(item)"
-                v-on="cEvent(item)"
-              >
-                <!-- <template
-                    v-if="
-                      !item?.attrs?.hasOwnProperty('data') &&
-                      !item?.attrs?.hasOwnProperty('options')
-                    "
-                  > -->
-                <component
-                  v-if="compChildValue(item)"
-                  :is="`el-${compChildValue(item)}`"
-                  v-for="(child, i) in item?.children"
-                  :key="i"
-                  :label="child.label ?? child[item.attrs?.props.label]"
-                  :value="child.value ?? child[item.attrs?.props.value]"
-                  :disabled="child?.disabled ?? props?.disabled"
-                >
+              <!-- :disabled="item.attrs?.disabled ?? props?.disabled" -->
+              <component v-else :is="`el-${item.type}`" v-model="modelValue[key!]" :placeholder="item.placeholder"
+                :disabled="props.disabled || item.attrs?.disabled" v-bind="cAttrs(item)" v-on="cEvent(item)">
+                <!-- :disabled="child?.disabled ?? props?.disabled" -->
+                <component v-if="compChildName(item)" :is="`el-${compChildName(item)}`"
+                  v-for="(child, i) in item?.children" :key="child[item.attrs?.valueKey || 'value']"
+                  :label="compChildLabel(item, child)" :value="compChildValue(item, child, i)"
+                  :disabled="props.disabled || child?.disabled">{{
+    child[item.attrs?.props?.label || 'label'] }}
                 </component>
-                <!-- </template> -->
               </component>
-              <!-- </template> -->
             </el-form-item>
           </el-col>
         </slot>
       </template>
       <el-col :span="6">
-        <slot
-          name="searchAction"
-          :form="form"
-          :model="model"
-          :isShowExpand="isShowExpand"
-        ></slot>
+        <slot name="searchAction" :form="form" :model="modelValue" :isShowExpand="isShowExpand"></slot>
       </el-col>
     </el-row>
-    <el-form-item v-if="!isSearch">
-      <slot name="action" :form="form" :model="model"></slot>
-    </el-form-item>
+    <!-- <el-form-item v-if="!isSearch">
+      <slot name="action" :form="form" :model="modelValue"></slot>
+    </el-form-item> -->
   </el-form>
 </template>
 
@@ -153,13 +71,22 @@ import {
   computed,
   defineExpose,
   nextTick,
+  onBeforeUnmount,
 } from 'vue'
 import cloneDeep from 'lodash/cloneDeep'
 
 let props = defineProps({
+  modelValue: {
+    type: Object,
+  },
+  value: {
+    type: Object,
+    default: null, // return object
+  },
   formData: {
     type: Object,
-    default: () => ({}), // return object
+    default: null,
+    // default: () => ({}), // return object
   },
   //表单配置项
   // options: {
@@ -252,7 +179,9 @@ const calculateShowCol = (expand: boolean) => {
       ? expand
         ? expand
         : showCol(item?.colSize)
-      : true
+      : item.hasOwnProperty('show')
+        ? item.show
+        : true
     item.show = state
   }
   isShowExpand.value = expand ? !expand : sum.value <= 24 * props.rowsTotal
@@ -275,51 +204,88 @@ const handleShow = (startFrom) => {
     }
   }
 }
-let model = ref<any>(null)
+// const formModel = ref(props.value || {})
+// let model = ref<any>(props.value || {})
+// watch(
+//   () => props.value,
+//   (val) => {
+//     if (initType.value) {
+//       console.log('新组件。。。。')
+//       model.value = val
+//     }
+//   },
+//   { deep: true }
+// )
+// const initType = ref(undefined)
+
 let rules = ref<any>({})
 const schema = ref<any>({})
 // BaseForm.FormInstance |
 let form = ref<any>()
 let editorVal = ref('')
-watch(
-  () => model.value,
-  (val) => {
-    // 将form实例返回到父级
-    emits('update:modelValue', val)
-  },
-  { deep: true }
-)
+
+let isMethodCalled = ref(false)
 /**
  * @description: 初始化菜单
  * @param {*} fromData : 表单绑定的数据
  * @return {*}
  */
-const initForm = async ({ formData: data = {} }) => {
+const initForm = async ({ formData: data = {}, type }) => {
+  // initType.value = type
+
+  if (isMethodCalled.value) {
+    // console.log('方法已经被调用过！')
+    return
+  } else {
+    // console.log('方法第一次被调用！')
+    isMethodCalled.value = true
+  }
   const formSchema = props.formOpts
-  // schema.value = Object.keys(formSchema).reduce(
-  //   (pre, key) => ({
-  //     ...pre,
-  //     [key]: {
-  //       ...formSchema[key],
-  //     },
-  //   }),
-  //   {}
-  // )
   Object.keys(formSchema).forEach((key) => {
     rules.value[key] = [
       {
         trigger: 'blur',
-        required: props.disabled ? true : formSchema[key].required,
+        required: props.disabled ? false : formSchema[key].required,
         message: (formSchema[key].label || '此项') + '是必填项',
       },
       ...(formSchema[key].rules || []),
     ]
   })
-  model.value = cloneDeep(data)
+  if (!type) {
+    emits('update:modelValue', data)
+  }
+  // if (props.value) {
+  //   model.value = props.value
+  // } else if (props.formData) {
+  //   model.value = props.formData
+  // } else {
+  //   model.value = data
+  // }
   await nextTick()
   form.value!.clearValidate()
   calculateShowCol(false)
+  isMethodCalled.value = false
 }
+onMounted(() => {
+  setTimeout(() => {
+    if (!isMethodCalled.value) {
+      initForm({ type: 'itself' })
+    }
+  })
+})
+onBeforeUnmount(() => {
+  isMethodCalled.value = false
+})
+// watch(
+//   () => props.formData,
+//   (val) => {
+//     // if (!initType.value) {
+//     console.log('老组件。。。。')
+//     emits('update:modelValue', val)
+//     // }
+//   },
+//   { deep: true }
+// )
 // const initForm = ({ schema: formSchema = {}, formData: data = {} }) => {
 //   schema.value = Object.keys(formSchema).reduce(
 //     (pre, key) => ({
@@ -343,8 +309,8 @@ const initForm = async ({ formData: data = {} }) => {
 //   model.value = cloneDeep(data)
 //   calculateShowCol(false)
 // }
-// 子子组件value
-const compChildValue = computed(() => {
+// 子组件名称
+const compChildName = computed(() => {
   return (opt: any) => {
     switch (opt.type) {
       case 'select':
@@ -358,24 +324,64 @@ const compChildValue = computed(() => {
     }
   }
 })
+// 子子组件value
+const compChildValue = computed(() => {
+  return (opt: any, child, key) => {
+    switch (opt.type) {
+      case 'select':
+        if (opt.attrs?.valueKey) return child
+      default:
+        return child[opt.attrs?.props?.value || 'value']
+    }
+  }
+})
+// 子子组件label
+const compChildLabel = computed(() => {
+  return (opt: any, child) => {
+    switch (opt.type) {
+      case 'radio-group':
+        return child[opt.attrs?.props?.value || 'value']
+      // case 'select':
+      // case 'checkbox-group':
+      //   return child[opt.attrs?.props.label || 'label']
+      default:
+        return child[opt.attrs?.props?.label || 'label']
+    }
+  }
+})
+// 子子组件文字展示
+// const compChildShowLabel = computed(() => {
+//   return (opt: any, child) => {
+//     switch (opt.type) {
+//       case 'checkbox-group':
+//       case 'radio-group':
+//         return child.label
+//       // case 'select':
+//       //   return child[opt.attrs?.props?.label || 'label']
+//       default:
+//         return child[opt.attrs?.props?.label || 'label']
+//     }
+//   }
+// })
 // 参数配置
 const cAttrs = computed(() => {
   return (item: any) => {
     const itemAttrs =
       typeof item.attrs == 'function'
         ? {
-            ...item.attrs(model.value),
-            disabled: props?.disabled
-              ? true
-              : item.attrs(model.value)?.disabled,
-          }
+          ...item.attrs(props.modelValue),
+          disabled: props?.disabled
+            ? true
+            : item.attrs(props.modelValue)?.disabled,
+        }
         : {
-            clearable: true,
-            filterable: true,
-            disabled: item.attrs?.disabled ?? props?.disabled,
-            // ...$attrs,
-            ...item.attrs,
-          }
+          clearable: true,
+          filterable: true,
+          // disabled: item.attrs?.disabled ?? props?.disabled,
+          // ...$attrs,
+          ...item.attrs,
+          disabled: props.disabled || item.attrs?.disabled,
+        }
     return itemAttrs
   }
 })
@@ -387,9 +393,9 @@ const cEvent = computed(() => {
     Object.keys(event).forEach((v) => {
       changeEvent[v] = (e) => {
         if (e) {
-          event[v] && event[v](e, model.value)
+          event[v] && event[v](e, props.modelValue)
         } else {
-          event[v] && event[v](model.value)
+          event[v] && event[v](props.modelValue)
         }
       }
     })
@@ -399,7 +405,7 @@ const cEvent = computed(() => {
 const resetFields = () => {
   //重置表单
   form.value!.resetFields()
-  model.value = {}
+  // props.modelValue = {}
 }
 //表单验证的方法
 const validate = () => {
@@ -407,20 +413,17 @@ const validate = () => {
 }
 //获取表单数据
 const getFormData = () => {
-  return model.value
+  return props.modelValue
 }
 defineExpose({
   initForm,
   resetFields,
   validate,
   getFormData,
-  model,
+  model: props.modelValue,
+  // props.modelValue,
   calculateShowCol,
   isShowExpand,
-})
-onMounted(() => {
-  // if (props.isSearch) {
-  // }
 })
 
 // watch(
@@ -470,53 +473,50 @@ let onExceed = (files: File, fileList: FileList) => {
 .el-upload {
   flex-direction: column !important;
 }
-
-.jnf-form {
-  background: #fff;
-  width: 100%;
-  padding-bottom: 10px;
-}
-// 新版title样式
-.secondary-tit {
-  width: 100%;
-  padding: 8px 5px;
-  font-size: 18px;
-  font-family: PingFang SC-Heavy, PingFang SC;
-  font-weight: 800;
-  color: #1e2124;
-  // font-weight: 900;
-  // background: #f2f2f2;
-  margin-bottom: 10px;
-  position: relative;
-}
-
-.secondary-tit::before {
-  content: '';
-  display: inline-block;
-  width: 5px;
-  height: 50%;
-  position: absolute;
-  left: -10px;
-  top: 50%;
-  /* 上边缘距离父容器顶部的百分比 */
-  transform: translate(0%, -50%);
-  /* 通过负值的偏移来居中元素 */
-  background: linear-gradient(#4a84fe 0%, #1665ff 20%);
-}
 </style>
 <style lang="scss">
 .jnf-form {
+
   .el-input,
   .el-cascader,
   .el-select,
   .el-input-number {
-    width: 100%;
+    width: 100% !important;
   }
 }
+
 .jnf-form {
   background: #fff;
   width: 100%;
   padding-bottom: 10px;
+
+  // 新版title样式
+  .secondary-tit {
+    width: 100%;
+    padding: 8px 5px;
+    font-size: 18px;
+    font-family: PingFang SC-Heavy, PingFang SC;
+    font-weight: 800;
+    color: #1e2124;
+    // font-weight: 900;
+    // background: #f2f2f2;
+    margin-bottom: 10px;
+    position: relative;
+  }
+
+  .secondary-tit::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 50%;
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    /* 上边缘距离父容器顶部的百分比 */
+    transform: translate(0%, -50%);
+    /* 通过负值的偏移来居中元素 */
+    background: linear-gradient(#4a84fe 0%, #1665ff 20%);
+  }
 
   .el-form-item {
     width: 100%;
@@ -524,11 +524,13 @@ let onExceed = (files: File, fileList: FileList) => {
     margin-right: unset !important;
     // margin: auto;
   }
+
   .el-form-item--default .el-form-item__label {
     line-height: normal;
     display: flex;
     align-items: center;
   }
+
   // .el-form-item--default {
   //   padding-right: 32px !important;
   // }

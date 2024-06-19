@@ -1,4 +1,10 @@
 <template>
+  <jn-toolbar
+    v-if="showToolbar"
+    v-model:columnConfig="columnConfig"
+    :cacheKey="cacheKey"
+    @setTableColumnConfig="setTableColumnConfig"
+  ></jn-toolbar>
   <!-- 数据表格 -->
   <el-table
     class="jn-table"
@@ -8,7 +14,7 @@
     v-loading="loading"
   >
     <!-- 递归渲染多级表头 -->
-    <template v-for="column in columns" :key="column">
+    <template v-for="(column, index) in tableColumn" :key="index">
       <MultistageColumn
         v-if="column.children && column.children.length"
         :key="column.prop"
@@ -37,7 +43,11 @@
   </el-table>
 
   <!-- 分页配置 -->
-  <div class="pagination" v-if="showPagination">
+  <div
+    class="pagination"
+    :style="{ justifyContent: paginationFloat }"
+    v-if="showPagination"
+  >
     <Pagination
       :pageConfig="_paginationConfig"
       @size-change="pageSizeChange"
@@ -57,6 +67,7 @@ import {
   defineEmits,
   reactive,
   ref,
+  watch,
   PropType,
 } from 'vue'
 import RenderCol from './renderCol.vue'
@@ -94,11 +105,101 @@ const props = defineProps({
     type: Object,
     default: () => {},
   },
+  /**
+   * 当一个页面出现多个Table时 作为唯一键
+   */
+  cacheKey: {
+    type: String,
+    default: '',
+    // required: true,
+  },
+  /**
+   * 是否显示自定义列配置
+   */
+  showToolbar: {
+    type: Boolean,
+    default: true,
+  },
+  /**
+   * 分页居左/居右
+   */
+  paginationFloat: {
+    type: String,
+    default: 'end',
+  },
 })
+
 const emit = defineEmits(['update:paginationConfig', 'changePage']) // 声明emit
 
 // const jnTableRef = ref<HTMLElement | null>(null) // 表格ref
 const jnTableRef = ref(null) // 表格ref
+
+const generateStorageKey = (cacheKey) =>
+  location.pathname +
+  location.hash +
+  `?table-column${cacheKey ? '-' + cacheKey : ''}`
+
+const tableColumnConfig = computed(() =>
+  JSON.parse(localStorage['tableColumnConfig'] || JSON.stringify({}))
+)
+/** 保存table配置项 */
+function setTableColumnConfig(value) {
+  tableColumnConfig.value[generateStorageKey(props.cacheKey)] = value
+  localStorage['tableColumnConfig'] = JSON.stringify(tableColumnConfig.value)
+}
+/** 获取table配置项 */
+function getTableColumnConfig(cacheKey, columns) {
+  return (
+    tableColumnConfig.value[generateStorageKey(cacheKey)] ||
+    columns.map((obj) => {
+      obj.checked = true
+      return obj
+    })
+  )
+}
+/** 所有列 */
+const columnConfig = ref(
+  getTableColumnConfig(props.cacheKey, props.columns) || []
+)
+/** 获取表格列 */
+const tableColumn = computed(() => {
+  const flag = tableColumnConfig.value[generateStorageKey(props.cacheKey)]
+  const resultArr = flag
+    ? columnConfig.value.map((item2: any) => {
+        const matchingItem1 = props?.columns?.find((item1: any) => {
+          if (item2.prop) {
+            return item1.prop === item2.prop
+          } else if (item2.type) {
+            return item1.type === item2.type
+          }
+        })
+        if (matchingItem1) {
+          if (matchingItem1.type) {
+            return matchingItem1 // 直接复用整个对象
+          } else {
+            return {
+              ...item2, // 复用属性
+              ...matchingItem1,
+              fixed: matchingItem1.fixed, // 保持 arr1 中的 fixed 不变
+              checked: item2.checked,
+            }
+          }
+        } else {
+          return item2
+        }
+      })
+    : columnConfig.value
+  return resultArr.filter((obj) => obj.checked !== false)
+})
+
+watch(
+  () => columnConfig.value,
+  (val) => {
+    columnConfig.value = val
+  },
+  { deep: true }
+)
+
 // 合并分页配置
 const _paginationConfig = computed(() => {
   const config = {
@@ -150,6 +251,7 @@ defineExpose({ element: jnTableRef })
 .pagination {
   text-align: right;
   margin: 10px 0;
+  display: flex;
 }
 </style>
 <style lang="scss" scoped>
